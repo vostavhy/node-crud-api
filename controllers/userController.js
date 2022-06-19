@@ -1,6 +1,7 @@
 import { findAll, findByID, create } from '../models/userModel.js';
 import { v4 as uuidv4 } from 'uuid';
 import { validate } from 'uuid';
+import { getPostData } from '../utils.js';
 
 // @desc Gets All Users
 // route GET /api/users
@@ -42,42 +43,36 @@ const getUser = async (req, res, id) => {
 // route POST /api/users
 const createUser = async (req, res) => {
   try {
-    let body = '';
-    req.on('data', (chunk) => {
-      body += chunk.toString();
-    });
+    let body = await getPostData(req);
+    const { username, age, hobbies } = JSON.parse(body);
 
-    req.on('end', async () => {
-      const { username, age, hobbies } = JSON.parse(body);
-
-      if (!username || !age || !hobbies) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(
-          JSON.stringify({
-            message: 'One or several required fields are empty',
-          })
-        );
-      } else if (
-        typeof username !== 'string' ||
-        typeof age !== 'number' ||
-        typeof hobbies !== 'string'
-      ) {
-        console.log();
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ message: 'Wrong types of fields' }));
-      } else {
-        const user = {
-          username,
-          age,
-          hobbies,
-        };
-        const newUser = await create(user);
-        res.writeHead(201, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify(newUser));
-      }
-    });
+    if (!username || !age || !hobbies) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(
+        JSON.stringify({
+          message: 'One or several required fields are empty',
+        })
+      );
+    } else if (
+      typeof username !== 'string' ||
+      typeof age !== 'number' ||
+      typeof hobbies !== 'string'
+    ) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ message: 'Wrong types of fields' }));
+    } else {
+      const user = {
+        username,
+        age,
+        hobbies,
+      };
+      const newUser = await create(user);
+      res.writeHead(201, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(newUser));
+    }
   } catch (error) {
-    console.log(error);
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ message: `${error}` }));
   }
 };
 
