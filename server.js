@@ -1,13 +1,12 @@
 import http from 'http';
 import dotenv from 'dotenv';
-import users from './data/users.json' assert { type: 'json' };
+import { getUsers } from './controllers/userController.js';
 
 dotenv.config();
 
 const server = http.createServer((req, res) => {
-  if (req.url === '/api/users') {
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify(users));
+  if (req.url === '/api/users' && req.method === 'GET') {
+    getUsers(req, res);
   } else {
     res.writeHead(404, { 'Content-Type': 'application/json' });
     res.end('Page not found');
