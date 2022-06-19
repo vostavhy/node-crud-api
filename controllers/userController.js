@@ -19,7 +19,7 @@ const getUsers = async (req, res) => {
 // route GET /api/user/:userID
 const getUser = async (req, res, id) => {
   try {
-    const user = await findByID();
+    const user = await findByID(id);
     if (!user) {
       if (!validate(id)) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
