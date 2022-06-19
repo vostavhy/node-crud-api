@@ -1,4 +1,4 @@
-import { findAll, findByID } from '../models/userModel.js';
+import { findAll, findByID, create } from '../models/userModel.js';
 import { v4 as uuidv4 } from 'uuid';
 import { validate } from 'uuid';
 
@@ -38,4 +38,47 @@ const getUser = async (req, res, id) => {
   }
 };
 
-export { getUsers, getUser };
+// @desc Create New User
+// route POST /api/users
+const createUser = async (req, res) => {
+  try {
+    let body = '';
+    req.on('data', (chunk) => {
+      body += chunk.toString();
+    });
+
+    req.on('end', async () => {
+      const { username, age, hobbies } = JSON.parse(body);
+
+      if (!username || !age || !hobbies) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(
+          JSON.stringify({
+            message: 'One or several required fields are empty',
+          })
+        );
+      } else if (
+        typeof username !== 'string' ||
+        typeof age !== 'number' ||
+        typeof hobbies !== 'string'
+      ) {
+        console.log();
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ message: 'Wrong types of fields' }));
+      } else {
+        const user = {
+          username,
+          age,
+          hobbies,
+        };
+        const newUser = await create(user);
+        res.writeHead(201, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(newUser));
+      }
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export { getUsers, getUser, createUser };
