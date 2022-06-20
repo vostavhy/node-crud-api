@@ -24,4 +24,22 @@ const create = (user) => {
   });
 };
 
-export { findAll, findByID, create };
+const update = (user) => {
+  return new Promise((resolve, reject) => {
+    const newUsers = users.filter((u) => u.id !== user.id);
+    const newUser = { id: uuidv4(), ...user };
+    newUsers.push(user);
+    writeDataToFile(newUsers);
+    resolve(user);
+  });
+};
+
+const del = (user) => {
+  return new Promise((resolve, reject) => {
+    const newUsers = users.filter((u) => u.id !== user.id);
+    writeDataToFile(newUsers);
+    resolve(user);
+  });
+};
+
+export { findAll, findByID, create, update, del };

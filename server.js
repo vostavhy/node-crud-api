@@ -1,6 +1,12 @@
 import http from 'http';
 import dotenv from 'dotenv';
-import { getUsers, getUser, createUser } from './controllers/userController.js';
+import {
+  getUsers,
+  getUser,
+  createUser,
+  updateUser,
+  deleteUser,
+} from './controllers/userController.js';
 
 dotenv.config();
 
@@ -12,6 +18,12 @@ const server = http.createServer((req, res) => {
     getUser(req, res, id);
   } else if (req.url === '/api/users' && req.method === 'POST') {
     createUser(req, res);
+  } else if (req.url.match(/\/api\/users\/\S+/) && req.method === 'PUT') {
+    const id = req.url.split('/')[3];
+    updateUser(req, res, id);
+  } else if (req.url.match(/\/api\/users\/\S+/) && req.method === 'DELETE') {
+    const id = req.url.split('/')[3];
+    deleteUser(req, res, id);
   } else {
     res.writeHead(404, { 'Content-Type': 'application/json' });
     res.end('Page not found');

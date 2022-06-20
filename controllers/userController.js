@@ -1,4 +1,4 @@
-import { findAll, findByID, create } from '../models/userModel.js';
+import { findAll, findByID, create, update, del } from '../models/userModel.js';
 import { v4 as uuidv4 } from 'uuid';
 import { validate } from 'uuid';
 import { getPostData } from '../utils.js';
@@ -76,4 +76,78 @@ const createUser = async (req, res) => {
   }
 };
 
-export { getUsers, getUser, createUser };
+// @desc Update User
+// route PUT /api/users/:userID
+const updateUser = async (req, res, id) => {
+  try {
+    let body = await getPostData(req);
+    const { username, age, hobbies } = JSON.parse(body);
+    const user = await findByID(id);
+
+    if (!user) {
+      if (!validate(id)) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ message: `id ${id} is invalid` }));
+      } else {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(
+          JSON.stringify({ message: `user with id ${id} doesn't exist` })
+        );
+      }
+    } else if (!username || !age || !hobbies) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(
+        JSON.stringify({
+          message: 'One or several required fields are empty',
+        })
+      );
+    } else if (
+      typeof username !== 'string' ||
+      typeof age !== 'number' ||
+      typeof hobbies !== 'string'
+    ) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ message: 'Wrong types of fields' }));
+    } else {
+      const user = {
+        id,
+        username,
+        age,
+        hobbies,
+      };
+      const newUser = await update(user);
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(newUser));
+    }
+  } catch (error) {
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ message: `${error}` }));
+  }
+};
+
+// @desc Delete Single User
+// route DELETE /api/user/:userID
+const deleteUser = async (req, res, id) => {
+  try {
+    const user = await findByID(id);
+    if (!user) {
+      if (!validate(id)) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ message: `id ${id} is invalid` }));
+      } else {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(
+          JSON.stringify({ message: `user with id ${id} doesn't exist` })
+        );
+      }
+    } else {
+      await del(user);
+      res.writeHead(204, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(user));
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export { getUsers, getUser, createUser, updateUser, deleteUser };
